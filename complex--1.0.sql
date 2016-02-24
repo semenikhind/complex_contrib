@@ -28,6 +28,11 @@ RETURNS complex
 AS 'MODULE_PATHNAME'
 LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION complex_mult(complex, complex)
+RETURNS complex
+AS 'MODULE_PATHNAME'
+LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION float8_to_Complex(float8)
 RETURNS complex
 AS 'MODULE_PATHNAME', 'complex_send'
@@ -46,6 +51,12 @@ CREATE OPERATOR + (
 	leftarg = complex, rightarg = complex,
 	procedure = complex_add,
 	commutator = +
+);
+
+CREATE OPERATOR * (
+	leftarg = complex, rightarg = complex,
+	procedure = complex_mult,
+	commutator = *
 );
 
 CREATE CAST (float8 AS complex)
