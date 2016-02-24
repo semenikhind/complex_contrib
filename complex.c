@@ -2,6 +2,7 @@
 #include "funcapi.h"
 #include "utils/memutils.h"
 #include "utils/builtins.h"
+#include "libpq/pqformat.h"
 
 #include <string.h>
 #include <stdio.h>
