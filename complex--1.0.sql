@@ -33,9 +33,14 @@ RETURNS complex
 AS 'MODULE_PATHNAME'
 LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION float8_to_Complex(float8)
+CREATE FUNCTION float8_to_complex(float8)
 RETURNS complex
-AS 'MODULE_PATHNAME', 'complex_send'
+AS 'MODULE_PATHNAME', 'float8_to_Complex'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION int4_to_complex(int4)
+RETURNS complex
+AS 'MODULE_PATHNAME', 'int4_to_Complex'
 LANGUAGE C IMMUTABLE STRICT;
 
 CREATE TYPE complex (
@@ -60,5 +65,9 @@ CREATE OPERATOR * (
 );
 
 CREATE CAST (float8 AS complex)
-    WITH FUNCTION float8_to_Complex (float8)
-    AS IMPLICIT;
+	WITH FUNCTION float8_to_Complex (float8)
+	AS IMPLICIT;
+
+CREATE CAST (int4 AS complex)
+	WITH FUNCTION int4_to_Complex (int4)
+	AS IMPLICIT;
