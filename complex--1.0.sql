@@ -99,13 +99,13 @@ CREATE OPERATOR = (
 CREATE OPERATOR < (
 	leftarg = complex, rightarg = complex,
 	procedure = complex_lt,
-	commutator = <, negator = >=
+	commutator = >, negator = >=
 );
 
 CREATE OPERATOR > (
 	leftarg = complex, rightarg = complex,
 	procedure = complex_gt,
-	commutator = >, negator = <=
+	commutator = <, negator = <=
 );
 
 CREATE CAST (float8 AS complex)
