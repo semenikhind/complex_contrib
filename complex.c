@@ -23,8 +23,11 @@ PG_FUNCTION_INFO_V1(complex_add);
 PG_FUNCTION_INFO_V1(complex_del);
 PG_FUNCTION_INFO_V1(complex_mult);
 PG_FUNCTION_INFO_V1(complex_eq);
+PG_FUNCTION_INFO_V1(complex_ne);
 PG_FUNCTION_INFO_V1(complex_lt);
+PG_FUNCTION_INFO_V1(complex_le);
 PG_FUNCTION_INFO_V1(complex_gt);
+PG_FUNCTION_INFO_V1(complex_ge);
 PG_FUNCTION_INFO_V1(float8_to_Complex);
 PG_FUNCTION_INFO_V1(int4_to_Complex);
 
@@ -119,9 +122,27 @@ complex_eq(PG_FUNCTION_ARGS)
 {
 	Complex *a = (Complex *) PG_GETARG_POINTER(0);
 	Complex *b = (Complex *) PG_GETARG_POINTER(1);
-	bool x = DatumGetBool(DirectFunctionCall2(float8eq, Float8GetDatum(a->x), Float8GetDatum(b->x)));
-	bool y = DatumGetBool(DirectFunctionCall2(float8eq, Float8GetDatum(a->y), Float8GetDatum(b->y)));
+	bool x = DatumGetBool(DirectFunctionCall2(float8eq,
+											  Float8GetDatum(a->x),
+											  Float8GetDatum(b->x)));
+	bool y = DatumGetBool(DirectFunctionCall2(float8eq,
+											  Float8GetDatum(a->y),
+											  Float8GetDatum(b->y)));
 	PG_RETURN_BOOL(x&&y);
+}
+
+Datum
+complex_ne(PG_FUNCTION_ARGS)
+{
+	Complex *a = (Complex *) PG_GETARG_POINTER(0);
+	Complex *b = (Complex *) PG_GETARG_POINTER(1);
+	bool x = DatumGetBool(DirectFunctionCall2(float8ne,
+											  Float8GetDatum(a->x),
+											  Float8GetDatum(b->x)));
+	bool y = DatumGetBool(DirectFunctionCall2(float8ne,
+											  Float8GetDatum(a->y),
+											  Float8GetDatum(b->y)));
+	PG_RETURN_BOOL(x||y);
 }
 
 Datum
@@ -129,9 +150,24 @@ complex_lt(PG_FUNCTION_ARGS)
 {
 	Complex *a = (Complex *) PG_GETARG_POINTER(0);
 	Complex *b = (Complex *) PG_GETARG_POINTER(1);
-	bool result = false;
-	if(a->x * a->x + a->y * a->y < b->x * b->x + b->y * b->y)
-		result = true;
+	float8 res_a = a->x * a->x + a->y * a->y;
+	float8 res_b = b->x * b->x + b->y * b->y;
+	bool result = DatumGetBool(DirectFunctionCall2(float8lt,
+												   Float8GetDatum(res_a),
+												   Float8GetDatum(res_b)));
+	PG_RETURN_BOOL(result);
+}
+
+Datum
+complex_le(PG_FUNCTION_ARGS)
+{
+	Complex *a = (Complex *) PG_GETARG_POINTER(0);
+	Complex *b = (Complex *) PG_GETARG_POINTER(1);
+	float8 res_a = a->x * a->x + a->y * a->y;
+	float8 res_b = b->x * b->x + b->y * b->y;
+	bool result = DatumGetBool(DirectFunctionCall2(float8le,
+												   Float8GetDatum(res_a),
+												   Float8GetDatum(res_b)));
 	PG_RETURN_BOOL(result);
 }
 
@@ -140,9 +176,24 @@ complex_gt(PG_FUNCTION_ARGS)
 {
 	Complex *a = (Complex *) PG_GETARG_POINTER(0);
 	Complex *b = (Complex *) PG_GETARG_POINTER(1);
-	bool result = false;
-	if(a->x * a->x + a->y * a->y > b->x * b->x + b->y * b->y)
-		result = true;
+	float8 res_a = a->x * a->x + a->y * a->y;
+	float8 res_b = b->x * b->x + b->y * b->y;
+	bool result = DatumGetBool(DirectFunctionCall2(float8gt,
+												   Float8GetDatum(res_a),
+												   Float8GetDatum(res_b)));
+	PG_RETURN_BOOL(result);
+}
+
+Datum
+complex_ge(PG_FUNCTION_ARGS)
+{
+	Complex *a = (Complex *) PG_GETARG_POINTER(0);
+	Complex *b = (Complex *) PG_GETARG_POINTER(1);
+	float8 res_a = a->x * a->x + a->y * a->y;
+	float8 res_b = b->x * b->x + b->y * b->y;
+	bool result = DatumGetBool(DirectFunctionCall2(float8ge,
+												   Float8GetDatum(res_a),
+												   Float8GetDatum(res_b)));
 	PG_RETURN_BOOL(result);
 }
 
