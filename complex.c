@@ -6,74 +6,68 @@
 #include <string.h>
 #include <stdio.h>
 
-
-
-int complex_worker(int c, int d);
+typedef struct Complex
+{
+	double x;
+	double y;
+} Complex;
 
 PG_MODULE_MAGIC;
 
-PG_FUNCTION_INFO_V1(complex_hello);
-PG_FUNCTION_INFO_V1(complex_read);
+PG_FUNCTION_INFO_V1(complex_in);
+PG_FUNCTION_INFO_V1(complex_out);
+PG_FUNCTION_INFO_V1(complex_send);
+PG_FUNCTION_INFO_V1(complex_recv);
 
 Datum
-complex_hello(PG_FUNCTION_ARGS)
+complex_in(PG_FUNCTION_ARGS)
 {
-	int a = PG_GETARG_INT32(0);
-	int b = PG_GETARG_INT32(1);
+	char *str = PG_GETARG_CSTRING(0);
+	double x,
+	       y;
+	Complex *result;
+	if (sscanf(str, " ( %lf , %lf )", &x, &y) != 2)
+		ereport(ERROR,
+			    (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+				 errmsg("invalid input syntax for complex: \"%s\"",
+				 str)));
 
-	PG_RETURN_INT32(complex_worker(a, b));
+	result = (Complex *) palloc(sizeof(Complex));
+	result->x = x;
+	result->y = y;
+	PG_RETURN_POINTER(result);
 }
 
 Datum
-complex_read(PG_FUNCTION_ARGS)
+complex_out(PG_FUNCTION_ARGS)
 {
-	text * str = PG_GETARG_TEXT_P(0);
-	char * filename = text_to_cstring(str);
-	int alloc_size = 1;
-	int data_size = 256;
-	int temp = 0;
-	char buf[256];
-    char * result = (char *)palloc0(alloc_size);
-	FILE * file = fopen(filename, "r");
+	Complex *complex = (Complex *) PG_GETARG_POINTER(0);
+	char *result;
 
-	while (fgets(buf, sizeof(buf), file))
-	{
-		while (alloc_size < data_size)
-		{
-			alloc_size *= 2;
-			result = (char *)repalloc(result, alloc_size * 2);
-		}
-		memcpy(&result[temp], buf, sizeof(buf));
-		temp += sizeof(buf);
-		data_size += sizeof(buf);
-	}
-
-	PG_RETURN_TEXT_P(cstring_to_text(result));
+	result = psprintf("(%g,%g)", complex->x, complex->y);
+	PG_RETURN_CSTRING(result);
 }
 
-
-int
-complex_worker(int c, int d)
+Datum
+complex_send(PG_FUNCTION_ARGS)
 {
-	char* buffer;
-	MemoryContext old_cxt;
-	MemoryContext func_cxt;
+	Complex *complex = (Complex *) PG_GETARG_POINTER(0);
+	StringInfoData buf;
 
-	func_cxt = AllocSetContextCreate(CurrentMemoryContext,
-									 "abc_worker context",
-									 ALLOCSET_DEFAULT_MINSIZE,
-									 ALLOCSET_DEFAULT_INITSIZE,
-									 ALLOCSET_DEFAULT_MAXSIZE);
-	old_cxt = MemoryContextSwitchTo(func_cxt);
-
-	buffer = palloc0(100);
-	sprintf(buffer, "a = %d, b = %d", c, d);
-	elog(INFO, "%s", buffer);
-
-	MemoryContextSwitchTo(old_cxt);
-	MemoryContextDelete(func_cxt);
-
-
-	return c + d;
+	pq_begintypsend(&buf);
+	pq_sendfloat8(&buf, complex->x);
+	pq_sendfloat8(&buf, complex->y);
+	PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 
+Datum
+complex_recv(PG_FUNCTION_ARGS)
+{
+	StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
+	Complex *result;
+
+	result = (Complex *) palloc(sizeof(Complex));
+	result->x = pq_getmsgfloat8(buf);
+	result->y = pq_getmsgfloat8(buf);
+	PG_RETURN_POINTER(result);
+}

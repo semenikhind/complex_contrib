@@ -4,12 +4,11 @@
 \echo Use "CREATE EXTENSION complex" to load this file. \quit
 
 
-CREATE FUNCTION complex_hello(int, int)
-RETURNS int
-AS 'MODULE_PATHNAME', 'complex_hello'
-LANGUAGE C STRICT;
-
-CREATE FUNCTION complex_read(text)
-RETURNS text
-AS 'MODULE_PATHNAME', 'complex_read'
-LANGUAGE C STRICT;
+CREATE TYPE complex (
+	internallength = 16,
+	input = complex_in,
+	output = complex_out,
+	receive = complex_recv,
+	send = complex_send,
+	alignment = double
+);
