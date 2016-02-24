@@ -6,26 +6,33 @@
 CREATE FUNCTION complex_in(cstring)
 RETURNS complex
 AS 'MODULE_PATHNAME', 'complex_in'
-LANGUAGE C STRICT
-IMMUTABLE;
+LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION complex_out(complex)
 RETURNS cstring
 AS 'MODULE_PATHNAME', 'complex_out'
-LANGUAGE C STRICT
-IMMUTABLE;
+LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION complex_recv(internal)
 RETURNS complex
 AS 'MODULE_PATHNAME', 'complex_recv'
-LANGUAGE C STRICT
-IMMUTABLE;
+LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION complex_send(complex)
 RETURNS bytea
 AS 'MODULE_PATHNAME', 'complex_send'
-LANGUAGE C STRICT
-IMMUTABLE;
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION complex_add(complex, complex)
+RETURNS complex
+AS 'MODULE_PATHNAME'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OPERATOR + (
+	leftarg = complex, rightarg = complex,
+	procedure = complex_add,
+	commutator = +
+);
 
 CREATE TYPE complex (
 	internallength = 16,
