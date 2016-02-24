@@ -105,6 +105,6 @@ float8_to_Complex(PG_FUNCTION_ARGS)
 	Complex *result;
 	result = (Complex *) palloc(sizeof(Complex));
 	result->x = a;
-	result->y = 0;
+	result->y = (float8) 0;
 	PG_RETURN_POINTER(result);
 }
