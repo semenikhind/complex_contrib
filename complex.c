@@ -22,7 +22,9 @@ PG_FUNCTION_INFO_V1(complex_recv);
 PG_FUNCTION_INFO_V1(complex_add);
 PG_FUNCTION_INFO_V1(complex_del);
 PG_FUNCTION_INFO_V1(complex_mult);
-PG_FUNCTION_INFO_V1(complex_cmp);
+PG_FUNCTION_INFO_V1(complex_eq);
+PG_FUNCTION_INFO_V1(complex_lt);
+PG_FUNCTION_INFO_V1(complex_gt);
 PG_FUNCTION_INFO_V1(float8_to_Complex);
 PG_FUNCTION_INFO_V1(int4_to_Complex);
 
@@ -113,12 +115,33 @@ complex_mult(PG_FUNCTION_ARGS)
 }
 
 Datum
-complex_cmp(PG_FUNCTION_ARGS)
+complex_eq(PG_FUNCTION_ARGS)
+{
+	Complex *a = (Complex *) PG_GETARG_POINTER(0);
+	Complex *b = (Complex *) PG_GETARG_POINTER(1);
+	bool x = DatumGetBool(DirectFunctionCall2(float8eq, Float8GetDatum(a->x), Float8GetDatum(b->x)));
+	bool y = DatumGetBool(DirectFunctionCall2(float8eq, Float8GetDatum(a->y), Float8GetDatum(b->y)));
+	PG_RETURN_BOOL(x&&y);
+}
+
+Datum
+complex_lt(PG_FUNCTION_ARGS)
 {
 	Complex *a = (Complex *) PG_GETARG_POINTER(0);
 	Complex *b = (Complex *) PG_GETARG_POINTER(1);
 	bool result = false;
-	if((a->x == b->x)&&(a->y == b->y))
+	if(a->x * a->x + a->y * a->y < b->x * b->x + b->y * b->y)
+		result = true;
+	PG_RETURN_BOOL(result);
+}
+
+Datum
+complex_gt(PG_FUNCTION_ARGS)
+{
+	Complex *a = (Complex *) PG_GETARG_POINTER(0);
+	Complex *b = (Complex *) PG_GETARG_POINTER(1);
+	bool result = false;
+	if(a->x * a->x + a->y * a->y > b->x * b->x + b->y * b->y)
 		result = true;
 	PG_RETURN_BOOL(result);
 }

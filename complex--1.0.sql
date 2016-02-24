@@ -38,7 +38,17 @@ RETURNS complex
 AS 'MODULE_PATHNAME'
 LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION complex_cmp(complex, complex)
+CREATE FUNCTION complex_eq(complex, complex)
+RETURNS bool
+AS 'MODULE_PATHNAME'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION complex_lt(complex, complex)
+RETURNS bool
+AS 'MODULE_PATHNAME'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION complex_gt(complex, complex)
 RETURNS bool
 AS 'MODULE_PATHNAME'
 LANGUAGE C IMMUTABLE STRICT;
@@ -82,8 +92,20 @@ CREATE OPERATOR * (
 
 CREATE OPERATOR = (
 	leftarg = complex, rightarg = complex,
-	procedure = complex_cmp,
-	commutator = =
+	procedure = complex_eq,
+	commutator = =, negator = !=
+);
+
+CREATE OPERATOR < (
+	leftarg = complex, rightarg = complex,
+	procedure = complex_lt,
+	commutator = <, negator = >=
+);
+
+CREATE OPERATOR > (
+	leftarg = complex, rightarg = complex,
+	procedure = complex_gt,
+	commutator = >, negator = <=
 );
 
 CREATE CAST (float8 AS complex)
