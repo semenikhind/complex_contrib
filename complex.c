@@ -9,8 +9,8 @@
 
 typedef struct Complex
 {
-	double x;
-	double y;
+	float8 x;
+	float8 y;
 } Complex;
 
 PG_MODULE_MAGIC;
@@ -25,7 +25,7 @@ Datum
 complex_in(PG_FUNCTION_ARGS)
 {
 	char *str = PG_GETARG_CSTRING(0);
-	double x,
+	float8 x,
 	       y;
 	Complex *result;
 	if (sscanf(str, " ( %lf , %lf )", &x, &y) != 2)

@@ -34,7 +34,7 @@ CREATE TYPE complex (
 	output = complex_out,
 	receive = complex_recv,
 	send = complex_send,
-	alignment = double
+	alignment = float8
 );
 
 CREATE OPERATOR + (
