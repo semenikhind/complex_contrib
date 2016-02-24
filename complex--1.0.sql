@@ -28,8 +28,18 @@ RETURNS complex
 AS 'MODULE_PATHNAME'
 LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION complex_del(complex, complex)
+RETURNS complex
+AS 'MODULE_PATHNAME'
+LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION complex_mult(complex, complex)
 RETURNS complex
+AS 'MODULE_PATHNAME'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION complex_cmp(complex, complex)
+RETURNS bool
 AS 'MODULE_PATHNAME'
 LANGUAGE C IMMUTABLE STRICT;
 
@@ -58,10 +68,22 @@ CREATE OPERATOR + (
 	commutator = +
 );
 
+CREATE OPERATOR - (
+	leftarg = complex, rightarg = complex,
+	procedure = complex_del,
+	commutator = -
+);
+
 CREATE OPERATOR * (
 	leftarg = complex, rightarg = complex,
 	procedure = complex_mult,
 	commutator = *
+);
+
+CREATE OPERATOR = (
+	leftarg = complex, rightarg = complex,
+	procedure = complex_cmp,
+	commutator = =
 );
 
 CREATE CAST (float8 AS complex)
