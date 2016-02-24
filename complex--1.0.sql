@@ -28,12 +28,6 @@ RETURNS complex
 AS 'MODULE_PATHNAME'
 LANGUAGE C IMMUTABLE STRICT;
 
-CREATE OPERATOR + (
-	leftarg = complex, rightarg = complex,
-	procedure = complex_add,
-	commutator = +
-);
-
 CREATE TYPE complex (
 	internallength = 16,
 	input = complex_in,
@@ -41,4 +35,10 @@ CREATE TYPE complex (
 	receive = complex_recv,
 	send = complex_send,
 	alignment = double
+);
+
+CREATE OPERATOR + (
+	leftarg = complex, rightarg = complex,
+	procedure = complex_add,
+	commutator = +
 );
