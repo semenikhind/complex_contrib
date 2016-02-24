@@ -22,6 +22,7 @@ PG_FUNCTION_INFO_V1(complex_recv);
 PG_FUNCTION_INFO_V1(complex_add);
 PG_FUNCTION_INFO_V1(complex_mult);
 PG_FUNCTION_INFO_V1(float8_to_Complex);
+PG_FUNCTION_INFO_V1(int4_to_Complex);
 
 Datum
 complex_in(PG_FUNCTION_ARGS)
@@ -102,6 +103,17 @@ Datum
 float8_to_Complex(PG_FUNCTION_ARGS)
 {
 	float8 a = PG_GETARG_FLOAT8(0);
+	Complex *result;
+	result = (Complex *) palloc(sizeof(Complex));
+	result->x = a;
+	result->y = 0;
+	PG_RETURN_POINTER(result);
+}
+
+Datum
+int4_to_Complex(PG_FUNCTION_ARGS)
+{
+	int32 a = PG_GETARG_INT32(0);
 	Complex *result;
 	result = (Complex *) palloc(sizeof(Complex));
 	result->x = a;
