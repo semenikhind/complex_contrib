@@ -143,43 +143,45 @@ Datum
 complex_pwrt(PG_FUNCTION_ARGS)
 {
 	FuncCallContext *funcctx;
-	cpwrt_fctx *fctx;
+	cpwrt_fctx *inter_call_data;
 	Complex *a = (Complex *) PG_GETARG_POINTER(0);
 	int32 pw = PG_GETARG_INT32(1);
 
 	if (SRF_IS_FIRSTCALL())
 	{
 		MemoryContext oldcontext;
+
 		funcctx = SRF_FIRSTCALL_INIT();
-		oldcontext = MemoryContextSwitchTo(
-						funcctx->multi_call_memory_ctx);
-		fctx = (cpwrt_fctx *) palloc(sizeof(cpwrt_fctx));
-		fctx->mod = sqrt(a->x * a->x + a->y * a->y);
+		oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+
+		inter_call_data = (cpwrt_fctx *) palloc(sizeof(cpwrt_fctx));
+		inter_call_data->mod = sqrt(a->x * a->x + a->y * a->y);
 		if (a->x > 0)
-			fctx->arg = atan(a->y / a->x);
+			inter_call_data->arg = atan(a->y / a->x);
 		if ((a->x < 0) && (a->y >= 0))
-			fctx->arg = M_PI + atan(a->y / a->x);
+			inter_call_data->arg = M_PI + atan(a->y / a->x);
 		if ((a->x < 0) && (a->y < 0))
-			fctx->arg = - M_PI + atan(a->y / a->x);
+			inter_call_data->arg = - M_PI + atan(a->y / a->x);
 		if (a->x == 0)
 			if (a->y >= 0)
-				fctx->arg = M_PI / 2;
+				inter_call_data->arg = M_PI / 2;
 			if (a->y < 0)
-				fctx->arg = - M_PI / 2;
-		fctx->num = 0;
+				inter_call_data->arg = - M_PI / 2;
+		inter_call_data->num = 0;
 		MemoryContextSwitchTo(oldcontext);
 		funcctx->max_calls = pw;
+		funcctx->user_fctx = inter_call_data;
 	}
 
 	funcctx = SRF_PERCALL_SETUP();
-	fctx = funcctx->user_fctx;
+	inter_call_data = funcctx->user_fctx;
 
 	if (funcctx->call_cntr < funcctx->max_calls)
 	{
 		Complex *result = (Complex *) palloc(sizeof(Complex));
-		result->x = pow(fctx->mod, 1 / pw) * (cos((fctx->arg + 2 * M_PI * fctx->num) / pw));
-		result->y = pow(fctx->mod, 1 / pw) * (sin((fctx->arg + 2 * M_PI * fctx->num) / pw));
-		fctx->num += 1;
+		result->x = pow(inter_call_data->mod, 1 / pw) * (cos((inter_call_data->arg + 2 * M_PI * inter_call_data->num) / pw));
+		result->y = pow(inter_call_data->mod, 1 / pw) * (sin((inter_call_data->arg + 2 * M_PI * inter_call_data->num) / pw));
+		inter_call_data->num += 1;
 		SRF_RETURN_NEXT(funcctx, PointerGetDatum(result));
 	}
 	else
