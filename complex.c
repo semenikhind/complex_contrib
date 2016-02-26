@@ -4,6 +4,8 @@
 #include "utils/builtins.h"
 #include "libpq/pqformat.h"
 
+#include "math.h"
+
 #include <string.h>
 #include <stdio.h>
 
@@ -12,6 +14,13 @@ typedef struct Complex
 	float8 x;
 	float8 y;
 } Complex;
+
+typedef struct
+{
+	float8 mod;
+	float8 arg;
+	int32 num;
+} cpwrt_fctx;
 
 PG_MODULE_MAGIC;
 
@@ -23,6 +32,7 @@ PG_FUNCTION_INFO_V1(complex_add);
 PG_FUNCTION_INFO_V1(complex_del);
 PG_FUNCTION_INFO_V1(complex_mult);
 PG_FUNCTION_INFO_V1(complex_div);
+PG_FUNCTION_INFO_V1(complex_pwrt);
 PG_FUNCTION_INFO_V1(complex_eq);
 PG_FUNCTION_INFO_V1(complex_ne);
 PG_FUNCTION_INFO_V1(complex_lt);
@@ -127,6 +137,55 @@ complex_div(PG_FUNCTION_ARGS)
 	result->x = (a->x * b->x + a->y * b->y)/(b->x * b->x + b->y * b->y);
 	result->y = (b->x * a->y - b->y * a->x)/(b->x * b->x + b->y * b->y);
 	PG_RETURN_POINTER(result);
+}
+
+Datum
+complex_pwrt(PG_FUNCTION_ARGS)
+{
+	FuncCallContext *funcctx;
+	cpwrt_fctx *fctx;
+	Complex *a = (Complex *) PG_GETARG_POINTER(0);
+	int32 pw = PG_GETARG_INT32(1);
+
+	if (SRF_IS_FIRSTCALL())
+	{
+		MemoryContext oldcontext;
+		funcctx = SRF_FIRSTCALL_INIT();
+		oldcontext = MemoryContextSwitchTo(
+						funcctx->multi_call_memory_ctx);
+		fctx = (cpwrt_fctx *) palloc(sizeof(cpwrt_fctx));
+		fctx->mod = sqrt(a->x * a->x + a->y * a->y);
+		if (a->x > 0)
+			fctx->arg = atan(a->y / a->x);
+		if ((a->x < 0) && (a->y >= 0))
+			fctx->arg = M_PI + atan(a->y / a->x);
+		if ((a->x < 0) && (a->y < 0))
+			fctx->arg = - M_PI + atan(a->y / a->x);
+		if (a->x == 0)
+			if (a->y >= 0)
+				fctx->arg = M_PI / 2;
+			if (a->y < 0)
+				fctx->arg = - M_PI / 2;
+		fctx->num = 0;
+		MemoryContextSwitchTo(oldcontext);
+		funcctx->max_calls = pw;
+	}
+
+	funcctx = SRF_PERCALL_SETUP();
+	fctx = funcctx->user_fctx;
+
+	if (funcctx->call_cntr < funcctx->max_calls)
+	{
+		Complex *result = (Complex *) palloc(sizeof(Complex));
+		result->x = pow(fctx->mod, 1 / pw) * (cos((fctx->arg + 2 * M_PI * fctx->num) / pw));
+		result->y = pow(fctx->mod, 1 / pw) * (sin((fctx->arg + 2 * M_PI * fctx->num) / pw));
+		fctx->num += 1;
+		SRF_RETURN_NEXT(funcctx, PointerGetDatum(result));
+	}
+	else
+	{
+		SRF_RETURN_DONE(funcctx);
+	}
 }
 
 Datum
