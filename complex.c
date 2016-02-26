@@ -22,6 +22,7 @@ PG_FUNCTION_INFO_V1(complex_recv);
 PG_FUNCTION_INFO_V1(complex_add);
 PG_FUNCTION_INFO_V1(complex_del);
 PG_FUNCTION_INFO_V1(complex_mult);
+PG_FUNCTION_INFO_V1(complex_div);
 PG_FUNCTION_INFO_V1(complex_eq);
 PG_FUNCTION_INFO_V1(complex_ne);
 PG_FUNCTION_INFO_V1(complex_lt);
@@ -114,6 +115,17 @@ complex_mult(PG_FUNCTION_ARGS)
 	result = (Complex *) palloc(sizeof(Complex));
 	result->x = a->x * b->x - a->y * b->y;
 	result->y = a->x * b->y + a->y * b->x;
+	PG_RETURN_POINTER(result);
+}
+
+Datum
+complex_div(PG_FUNCTION_ARGS)
+{
+	Complex *a = (Complex *) PG_GETARG_POINTER(0);
+	Complex *b = (Complex *) PG_GETARG_POINTER(1), *result;
+	result = (Complex *) palloc(sizeof(Complex));
+	result->x = (a->x * b->x + a->y * b->y)/(b->x * b->x + b->y * b->y);
+	result->y = (b->x * a->y - b->y * a->x)/(b->x * b->x + b->y * b->y);
 	PG_RETURN_POINTER(result);
 }
 

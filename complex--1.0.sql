@@ -38,6 +38,11 @@ RETURNS complex
 AS 'MODULE_PATHNAME'
 LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION complex_div(complex, complex)
+RETURNS complex
+AS 'MODULE_PATHNAME'
+LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION complex_eq(complex, complex)
 RETURNS bool
 AS 'MODULE_PATHNAME'
@@ -103,6 +108,11 @@ CREATE OPERATOR * (
 	leftarg = complex, rightarg = complex,
 	procedure = complex_mult,
 	commutator = *
+);
+
+CREATE OPERATOR / (
+	leftarg = complex, rightarg = complex,
+	procedure = complex_div
 );
 
 CREATE OPERATOR = (
