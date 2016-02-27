@@ -163,3 +163,10 @@ CREATE CAST (float8 AS complex)
 CREATE CAST (int4 AS complex)
 	WITH FUNCTION int4_to_Complex (int4)
 	AS IMPLICIT;
+
+CREATE AGGREGATE sum (complex)
+(
+    sfunc = complex_add,
+    stype = complex,
+    initcond = '(0,0)'
+);
