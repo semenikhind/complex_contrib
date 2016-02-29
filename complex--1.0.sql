@@ -78,6 +78,16 @@ RETURNS bool
 AS 'MODULE_PATHNAME'
 LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION complex_min(complex, complex)
+RETURNS complex
+AS 'MODULE_PATHNAME'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION complex_max(complex, complex)
+RETURNS complex
+AS 'MODULE_PATHNAME'
+LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION float8_to_complex(float8)
 RETURNS complex
 AS 'MODULE_PATHNAME', 'float8_to_Complex'
@@ -169,4 +179,16 @@ CREATE AGGREGATE sum (complex)
     sfunc = complex_add,
     stype = complex,
     initcond = '(0,0)'
+);
+
+CREATE AGGREGATE min (complex)
+(
+    sfunc = complex_min,
+    stype = complex
+);
+
+CREATE AGGREGATE max (complex)
+(
+    sfunc = complex_max,
+    stype = complex
 );
