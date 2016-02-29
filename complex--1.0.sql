@@ -88,6 +88,16 @@ RETURNS complex
 AS 'MODULE_PATHNAME'
 LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION complex_avg(c_avg, complex)
+RETURNS c_avg
+AS 'MODULE_PATHNAME'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION complex_avg_fin(c_avg)
+RETURNS complex
+AS 'MODULE_PATHNAME'
+LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION float8_to_complex(float8)
 RETURNS complex
 AS 'MODULE_PATHNAME', 'float8_to_Complex'
@@ -106,6 +116,8 @@ CREATE TYPE complex (
 	send = complex_send,
 	alignment = float8
 );
+
+CREATE TYPE c_avg AS (count int4, sum complex);
 
 CREATE OPERATOR + (
 	leftarg = complex, rightarg = complex,
@@ -191,4 +203,11 @@ CREATE AGGREGATE max (complex)
 (
     sfunc = complex_max,
     stype = complex
+);
+
+CREATE AGGREGATE avg (complex)
+(
+    sfunc = complex_avg,
+    stype = complex,
+    finalfunc = complex_avg_fin
 );

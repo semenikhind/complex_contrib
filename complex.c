@@ -22,6 +22,12 @@ typedef struct
 	int32 num;
 } cpwrt_fctx;
 
+typedef struct c_avg
+{
+	int32 i;
+	Complex *sum;
+} c_avg;
+
 PG_MODULE_MAGIC;
 
 PG_FUNCTION_INFO_V1(complex_in);
@@ -41,6 +47,8 @@ PG_FUNCTION_INFO_V1(complex_gt);
 PG_FUNCTION_INFO_V1(complex_ge);
 PG_FUNCTION_INFO_V1(complex_min);
 PG_FUNCTION_INFO_V1(complex_max);
+PG_FUNCTION_INFO_V1(complex_avg);
+PG_FUNCTION_INFO_V1(complex_avg_fin);
 PG_FUNCTION_INFO_V1(float8_to_Complex);
 PG_FUNCTION_INFO_V1(int4_to_Complex);
 
@@ -282,6 +290,29 @@ complex_max(PG_FUNCTION_ARGS)
 	Complex *a = (Complex *) PG_GETARG_POINTER(0);
 	Complex *b = (Complex *) PG_GETARG_POINTER(1), *result;
 	result = (c_ge(a, b))? a:b;
+	PG_RETURN_POINTER(result);
+}
+
+Datum
+complex_avg(PG_FUNCTION_ARGS)
+{
+	c_avg *data = (c_avg *) PG_GETARG_POINTER(0);
+	Complex *a = data->sum;
+	Complex *b = (Complex *) PG_GETARG_POINTER(1);
+	c_avg *result = (c_avg *) palloc(sizeof(c_avg));
+	result->sum->x = a->x + b->x;
+	result->sum->y = a->y + b->y;
+	result->i += 1;
+	PG_RETURN_POINTER(result);
+}
+
+Datum
+complex_avg_fin(PG_FUNCTION_ARGS)
+{
+	c_avg *data = (c_avg *) PG_GETARG_POINTER(0);
+	Complex *result = (Complex *) palloc(sizeof(Complex));
+	result->x = data->sum->x / data->i;
+	result->y = data->sum->y / data->i;
 	PG_RETURN_POINTER(result);
 }
 
