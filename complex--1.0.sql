@@ -88,20 +88,6 @@ RETURNS complex
 AS 'MODULE_PATHNAME'
 LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION avg (sum c_avg, b complex) RETURNS c_avg AS '
-DECLARE
-
-BEGIN
-sum.sum = sum.sum + b;
-sum.count += 1;
-return sum;
-END;
-' LANGUAGE plpgsql;
-
-CREATE FUNCTION avg_fin (sum c_avg) RETURNS complex AS '
-return sum.sum / sum.count;
-' LANGUAGE plpgsql;
-
 CREATE FUNCTION float8_to_complex(float8)
 RETURNS complex
 AS 'MODULE_PATHNAME', 'float8_to_Complex'
@@ -209,9 +195,13 @@ CREATE AGGREGATE max (complex)
     stype = complex
 );
 
+CREATE FUNCTION complex_avg (val c_avg, b complex) returns c_avg as $$ begin return (val.count + 1, val.sum + b); end; $$ language plpgsql;
+
+CREATE FUNCTION complex_avg_fin (val c_avg) returns complex as $$ begin return (val.sum / val.count); end; $$ language plpgsql;
+
 CREATE AGGREGATE avg (complex)
 (
     sfunc = complex_avg,
-    stype = complex,
+    stype = c_avg,
     finalfunc = complex_avg_fin
 );
