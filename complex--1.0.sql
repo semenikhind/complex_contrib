@@ -178,30 +178,41 @@ CREATE CAST (int4 AS complex)
 
 CREATE AGGREGATE sum (complex)
 (
-    sfunc = complex_add,
-    stype = complex,
-    initcond = '(0,0)'
+	sfunc = complex_add,
+	stype = complex,
+	initcond = '(0,0)'
 );
 
 CREATE AGGREGATE min (complex)
 (
-    sfunc = complex_min,
-    stype = complex
+	sfunc = complex_min,
+	stype = complex
 );
 
 CREATE AGGREGATE max (complex)
 (
-    sfunc = complex_max,
-    stype = complex
+	sfunc = complex_max,
+	stype = complex
 );
 
-CREATE FUNCTION complex_avg (val c_avg, b complex) returns c_avg as $$ begin return (val.count + 1, val.sum + b); end; $$ language plpgsql;
+CREATE FUNCTION complex_avg (val c_avg, b complex)
+RETURNS c_avg AS $$
+	begin
+		return (val.count + 1, val.sum + b);
+	end;
+$$ language plpgsql;
 
-CREATE FUNCTION complex_avg_fin (val c_avg) returns complex as $$ begin return (val.sum / val.count); end; $$ language plpgsql;
+CREATE FUNCTION complex_avg_fin (val c_avg)
+RETURNS complex AS $$
+	begin
+		return val.sum / val.count;
+	end;
+$$ language plpgsql;
 
 CREATE AGGREGATE avg (complex)
 (
-    sfunc = complex_avg,
-    stype = c_avg,
-    finalfunc = complex_avg_fin
+	sfunc = complex_avg,
+	stype = c_avg,
+	finalfunc = complex_avg_fin,
+	initcond = '(0,"(0,0)")'
 );
