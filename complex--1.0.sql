@@ -88,15 +88,19 @@ RETURNS complex
 AS 'MODULE_PATHNAME'
 LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION complex_avg(c_avg, complex)
-RETURNS c_avg
-AS 'MODULE_PATHNAME'
-LANGUAGE C IMMUTABLE STRICT;
+CREATE FUNCTION avg (sum c_avg, b complex) RETURNS c_avg AS '
+DECLARE
 
-CREATE FUNCTION complex_avg_fin(c_avg)
-RETURNS complex
-AS 'MODULE_PATHNAME'
-LANGUAGE C IMMUTABLE STRICT;
+BEGIN
+sum.sum = sum.sum + b;
+sum.count += 1;
+return sum;
+END;
+' LANGUAGE plpgsql;
+
+CREATE FUNCTION avg_fin (sum c_avg) RETURNS complex AS '
+return sum.sum / sum.count;
+' LANGUAGE plpgsql;
 
 CREATE FUNCTION float8_to_complex(float8)
 RETURNS complex
