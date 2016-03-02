@@ -3,12 +3,6 @@
 #include "utils/memutils.h"
 #include "utils/builtins.h"
 #include "libpq/pqformat.h"
-#include "storage/lockdefs.h"
-#include "nodes/makefuncs.h"
-#include "utils/tqual.h"
-#include "access/tuptoaster.h"
-#include "executor/tuptable.h"
-
 
 #include "math.h"
 
@@ -51,7 +45,6 @@ PG_FUNCTION_INFO_V1(complex_avg);
 PG_FUNCTION_INFO_V1(complex_avg_fin);
 PG_FUNCTION_INFO_V1(float8_to_Complex);
 PG_FUNCTION_INFO_V1(int4_to_Complex);
-PG_FUNCTION_INFO_V1(check_pg_size);
 
 bool c_le(Complex * a, Complex * b);
 bool c_ge(Complex * a, Complex * b);
@@ -314,35 +307,6 @@ int4_to_Complex(PG_FUNCTION_ARGS)
 	result->x = a;
 	result->y = 0;
 	PG_RETURN_POINTER(result);
-}
-
-Datum
-check_pg_size(PG_FUNCTION_ARGS)
-{
-	RangeVar *table_rv = makeRangeVar("public", "test2", -1);
-	Relation table_heap = heap_openrv(table_rv, AccessShareLock);
-
-	HeapScanDesc heapScan = heap_beginscan(table_heap, SnapshotSelf, 0, (ScanKey) NULL);
-
-	Datum	values[2];
-	bool nulls[2];
-
-	for (;;)
-	{
-		HeapTuple local_tuple;
-		local_tuple = heap_getnext(heapScan, ForwardScanDirection);
-		if (local_tuple == NULL)
-			break;
-		heap_deform_tuple(local_tuple, table_heap, values, nulls);
-		elog(WARNING,
-			"Test id:%i nick:%s",
-			DatumGetInt32(values[0]),
-			TextDatumGetCString(values[1])
-		);
-	}
-	heap_endscan(heapScan);
-	heap_close(heapScan, AccessShareLock);
-
 }
 
 bool c_le(Complex * a, Complex * b)
