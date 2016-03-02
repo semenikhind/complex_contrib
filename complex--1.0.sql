@@ -98,6 +98,11 @@ RETURNS complex
 AS 'MODULE_PATHNAME', 'int4_to_Complex'
 LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION check_pg_size()
+RETURNS void
+AS 'MODULE_PATHNAME', 'check_pg_size'
+LANGUAGE C IMMUTABLE STRICT;
+
 CREATE TYPE complex (
 	internallength = 16,
 	input = complex_in,
